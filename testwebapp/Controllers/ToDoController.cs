@@ -17,7 +17,7 @@ namespace testwebapp.Controllers
         [HttpGet("health")]
         public async Task<ActionResult<IEnumerable<TodoTask>>> HealthCheck()
         {
-            return Ok("Everything is ok");
+            return Ok("Everything is ok!");
         }
 
 
