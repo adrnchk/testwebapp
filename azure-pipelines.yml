@@ -2,39 +2,48 @@ trigger:
   - main
 
 pool:
-  name: Default  # ← змінили це
+  name: Default
 
 variables:
   buildConfiguration: 'Release'
 
-steps:
-  - task: UseDotNet@2
-    displayName: 'Install .NET'
-    inputs:
-      version: '8.0.x'
+stages:
+- stage: CI
+  jobs:
+    - job: Build
+      steps:
+        - task: UseDotNet@2
+          inputs:
+            version: '8.0.x'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Restore'
-    inputs:
-      command: 'restore'
-      projects: '**/*.csproj'
+        - task: DotNetCoreCLI@2
+          displayName: 'Restore'
+          inputs:
+            command: 'restore'
+            projects: '**/*.csproj'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Build'
-    inputs:
-      command: 'build'
-      projects: '**/*.csproj'
-      arguments: '--configuration $(buildConfiguration) --no-restore'
+        - task: DotNetCoreCLI@2
+          displayName: 'Build'
+          inputs:
+            command: 'build'
+            projects: '**/*.csproj'
+            arguments: '--configuration $(buildConfiguration)'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Publish'
-    inputs:
-      command: 'publish'
-      projects: '**/testwebapp.csproj'
-      arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        - task: DotNetCoreCLI@2
+          displayName: 'Test'
+          inputs:
+            command: 'test'
+            projects: '**/*Tests.csproj'
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact'
-    inputs:
-      pathToPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
+- stage: CD
+  dependsOn: CI          # ← тільки якщо CI пройшов!
+  condition: succeeded() # ← якщо тести провалились → стоп
+  jobs:
+    - job: Deploy
+      steps:
+        - script: |
+            npm install -g @railway/cli
+            railway up --service testwebapp
+          env:
+            RAILWAY_TOKEN: $(RAILWAY_TOKEN)
+          displayName: 'Deploy to Railway'
