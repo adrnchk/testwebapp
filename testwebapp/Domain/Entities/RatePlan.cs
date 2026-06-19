@@ -9,10 +9,6 @@ public class RatePlan
     public string Currency { get; init; } = "USD";
     public CancellationPolicyType CancellationPolicy { get; init; }
 
-    /// <summary>
-    /// Hours before check-in within which free cancellation is available.
-    /// Null when CancellationPolicy is NonRefundable.
-    /// </summary>
     public int? FreeCancellationHoursBeforeCheckIn { get; init; }
 
     public MealType? MealType { get; init; }

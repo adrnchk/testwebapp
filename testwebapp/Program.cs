@@ -14,13 +14,11 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddSingleton(TimeProvider.System);
 
-// Railway injects DATABASE_URL as an env variable; fall back to appsettings for local dev.
 var connectionString =
     Environment.GetEnvironmentVariable("DATABASE_URL")
     ?? builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("No database connection string configured.");
 
-// Railway DATABASE_URL uses postgres:// scheme — convert to Npgsql format if needed.
 if (connectionString.StartsWith("postgres://") || connectionString.StartsWith("postgresql://"))
 {
     var uri = new Uri(connectionString);
