@@ -42,9 +42,19 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
-    await DataSeeder.SeedAsync(db);
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Console.WriteLine($"[Startup] Connecting to DB...");
+        await db.Database.MigrateAsync();
+        Console.WriteLine($"[Startup] Migrations applied.");
+        await DataSeeder.SeedAsync(db);
+        Console.WriteLine($"[Startup] Seed complete.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[Startup] ERROR: {ex}");
+    }
 }
 
 app.Run();
